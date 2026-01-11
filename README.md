@@ -1,102 +1,129 @@
-Plataforma de Base de Datos Heterogénea
+# 🗄️ Plataforma de Base de Datos Heterogénea
 
-Este repositorio contiene la implementación de una plataforma de bases de datos heterogénea que integra MariaDB, Oracle y SQL Server mediante una capa de interconexión automatizada (ETL) ejecutada sobre un servidor Ubuntu.
+![Python](https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04-orange?style=for-the-badge&logo=ubuntu&logoColor=white)
+![MariaDB](https://img.shields.io/badge/MariaDB-Server-brown?style=for-the-badge&logo=mariadb&logoColor=white)
+![Oracle](https://img.shields.io/badge/Oracle-Database-red?style=for-the-badge&logo=oracle&logoColor=white)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-Analytics-lightgrey?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
 
-Arquitectura
+Este repositorio contiene la implementación de una **plataforma de bases de datos heterogénea** que integra múltiples motores mediante un proceso ETL automatizado.
 
-MariaDB: Repositorio de datos maestros (estudiantes, docentes y asignaturas).
+El objetivo principal es demostrar una arquitectura centralizada de análisis de datos, consolidando información transaccional dispersa en un almacén analítico unificado.
 
-Oracle: Base de datos transaccional académica (matrículas y calificaciones).
+---
 
-SQL Server: Repositorio analítico consolidado (modelo dimensional).
+## 🏗️ Arquitectura
 
-Ubuntu Server: Capa ETL y automatización mediante tareas programadas.
+El flujo de información sigue un esquema de extracción, transformación y carga (ETL) centralizado en un servidor Linux.
 
-Requisitos
+### Componentes del Sistema
 
-Docker y Docker Compose
+| Componente | Rol | Descripción |
+| :--- | :--- | :--- |
+| **MariaDB** | Datos Maestros | Repositorio de estudiantes, docentes y asignaturas. |
+| **Oracle** | Transaccional | Base de datos académica (matrículas y calificaciones). |
+| **SQL Server** | Analítico | Data Warehouse implementado bajo un modelo dimensional. |
+| **Ubuntu Server** | Orquestador | Servidor encargado de ejecutar los scripts Python y cron jobs. |
 
-Python 3
+### Flujo de Datos
 
-Acceso a instancias de MariaDB, Oracle y SQL Server
+```mermaid
+graph LR
+    A[MariaDB] -->|Datos Maestros| C(Proceso ETL / Python)
+    B[Oracle] -->|Matrículas/Notas| C
+    C -->|Datos Consolidados| D[SQL Server]
+```
 
-Ubuntu Server 22.04
+### Requisitos Previos
 
-Configuración
-1. Clonar el repositorio
-git clone https://github.com/USUARIO/db-plataforma-heterogenea.git
+Para desplegar este proyecto, asegúrate de contar con lo siguiente:
+
+* 🐧 **Sistema Operativo:** Ubuntu Server 22.04
+* 🐍 **Lenguaje:** Python 3.x
+* 🐳 **Contenedores:** Docker y Docker Compose (opcional)
+* 🔑 **Acceso a instancias:** MariaDB, Oracle y SQL Server activos.
+
+
+## ⚙️ Configuración e Instalación
+
+### 1. Clonar el repositorio 🔗📥
+
+Descarga el código fuente en tu servidor:
+
+```bash
+git clone https://github.com/Sebasflm/db-plataforma-heterogenea.git
 cd db-plataforma-heterogenea
+```
 
-2. Configurar variables de entorno
+### 2. Variables de Entorno 🧪⚙️
 
-Crear un archivo .env a partir del archivo de ejemplo:
+Crea un archivo .env en la raíz del proyecto para gestionar las credenciales de forma segura.
 
-cp .env.example .env
+```bash
+nano .env
+```
 
+Copia y pega la siguiente estructura completando con tus datos reales:
 
-Editar el archivo .env y definir las credenciales y parámetros de conexión de los tres motores de bases de datos:
+```ini
+# --- MariaDB (Maestros) ---
+MARIADB_HOST=192.168.x.x
+MARIADB_PORT=3306
+MARIADB_DB=nombre_db
+MARIADB_USER=usuario
+MARIADB_PASSWORD=contraseña
 
-# MariaDB
-MARIADB_HOST=
-MARIADB_PORT=
-MARIADB_DB=
-MARIADB_USER=
-MARIADB_PASSWORD=
+# --- Oracle (Transaccional) ---
+ORACLE_HOST=192.168.x.x
+ORACLE_PORT=1521
+ORACLE_SERVICE=xe
+ORACLE_USER=usuario
+ORACLE_PASSWORD=contraseña
 
-# Oracle
-ORACLE_HOST=
-ORACLE_PORT=
-ORACLE_SERVICE=
-ORACLE_USER=
-ORACLE_PASSWORD=
+# --- SQL Server (Analítico) ---
+SQLSERVER_HOST=192.168.x.x
+SQLSERVER_PORT=1433
+SQLSERVER_DB=nombre_dw
+SQLSERVER_USER=sa
+SQLSERVER_PASSWORD=contraseña
+```
+**Nota:** Las credenciales se cargan dinámicamente mediante variables de entorno, evitando exponer contraseñas en el código fuente.
 
-# SQL Server
-SQLSERVER_HOST=
-SQLSERVER_PORT=
-SQLSERVER_DB=
-SQLSERVER_USER=
-SQLSERVER_PASSWORD=
+### 3. Ejecución de Scripts ▶️📜
+El sistema está diseñado para ejecutarse en un orden específico para garantizar la integridad de los datos.
 
+#### 1️⃣ Generación de Datos (Faker)
+Si necesitas poblar las bases de datos con información de prueba:
 
-Nota: Las credenciales no se encuentran hardcodeadas en los scripts, sino que se cargan dinámicamente desde este archivo mediante variables de entorno, siguiendo buenas prácticas de seguridad.
+**01_faker_mariadb.py:** Genera los datos maestros (Estudiantes, Docentes).
 
-3. Instalar dependencias Python
-pip install -r requirements.txt
+**02_faker_oracle.py:** Genera datos académicos (Notas, Matrículas).
 
+#### 2️⃣ Proceso ETL
 
-(o instalar manualmente las librerías necesarias si no se utiliza requirements.txt)
+**03_etl_sqlserver.py:** Extrae la data de MariaDB y Oracle, la transforma y la carga en el modelo dimensional de SQL Server.
 
-Orden de ejecución de los scripts
+### 4. Automatización (Crontab) ⏰🤖
 
-Los scripts deben ejecutarse en el siguiente orden:
+Para que el proceso ETL se ejecute automáticamente en tu servidor Ubuntu:
 
-01_faker_mariadb.py
-Genera datos maestros iniciales en MariaDB.
+#### 1️⃣ Abre el editor de tareas programadas:
 
-02_faker_oracle.py
-Genera datos académicos iniciales en Oracle utilizando identificadores existentes.
-
-03_etl_sqlserver.py
-Consolida la información desde MariaDB y Oracle hacia SQL Server.
-
-Automatización del proceso ETL
-
-El script 03_etl_sqlserver.py se ejecuta de forma automática y periódica mediante una tarea programada (cron) en el servidor Ubuntu.
-
-Configuración de la tarea cron
-
-Editar el crontab del usuario:
-
+```bash
 crontab -e
+```
+#### 2️⃣ Agrega la siguiente línea al final del archivo (ajusta la ruta según tu usuario):
 
-
-Agregar la siguiente línea:
-
+```bash
 * * * * * /usr/bin/python3 /home/usuario/db-plataforma-heterogenea/scripts/03_etl_sqlserver.py >> /home/usuario/db-plataforma-heterogenea/etl.log 2>&1
+```
 
+### 5. Monitoreo de Logs 📊📄
 
-Esta configuración ejecuta el proceso ETL cada minuto, permitiendo que los cambios realizados en las bases de datos origen se reflejen automáticamente en el repositorio consolidado de SQL Server.
+Puedes revisar si el proceso está funcionando correctamente viendo el archivo de log en tiempo real:
 
-Automatización y funcionamiento
+```bash
+tail -f etl.log
+```
+Hecho con ❤️ y Python.
 
-El uso de tareas programadas permite que la capa de interconexión funcione de manera continua y sin intervención manual, cumpliendo con el objetivo de integrar de forma automática una plataforma de bases de datos heterogénea.
