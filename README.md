@@ -27,6 +27,3 @@ Este repositorio contiene la implementación de una plataforma de bases de datos
 
 ## Automatización
 El proceso ETL se ejecuta automáticamente cada minuto mediante tareas programadas (cron).
-
-## Diagramas
-Los diagramas de arquitectura y despliegue se encuentran en la carpeta `/diagrams`.
