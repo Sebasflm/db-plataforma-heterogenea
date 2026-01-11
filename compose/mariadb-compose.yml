@@ -1,0 +1,23 @@
+services:
+  mariadb-db:
+    image: mariadb:11.4
+    container_name: mariadb-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: RootPass_Str0ng!
+      MARIADB_DATABASE: academico_maestros
+      MARIADB_USER: dba_mariadb
+      MARIADB_PASSWORD: DbaPass_Str0ng!
+    ports:
+      - "3308:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      - dbnet
+
+volumes:
+  mariadb-data:
+
+networks:
+  dbnet:
+    external: true

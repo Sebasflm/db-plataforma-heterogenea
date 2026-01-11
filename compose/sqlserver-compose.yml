@@ -1,0 +1,22 @@
+services:
+  sqlserver-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver-db
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "SaPass_Str0ng!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1435:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - dbnet
+
+volumes:
+  sqlserver-data:
+
+networks:
+  dbnet:
+    external: true
